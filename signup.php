@@ -149,14 +149,14 @@
                     if ($count > 0) {
                         alert('error', 'User already signed up. Please log in instead.');
                     } else {
-                        $password_hashed = password_hash($frm_data['password'], PASSWORD_BCRYPT);
+                        // $password_hashed = password_hash($frm_data['password'], PASSWORD_BCRYPT);
                         $query = "INSERT INTO user (name, email, number, password) VALUES (?, ?, ?, ?)";
                         $stmt = $conn->prepare($query);
                         if ($stmt === false) {
                             alert('error', 'Prepare statement failed: ' . htmlspecialchars($conn->error));
                             exit();
                         }
-                        $stmt->bind_param("ssss", $frm_data['fullname'], $frm_data['email'], $frm_data['phonenumber'], $password_hashed);
+                        $stmt->bind_param("ssss", $frm_data['fullname'], $frm_data['email'], $frm_data['phonenumber'], $frm_data['password']);
                         $res = $stmt->execute();
 
                         if ($res) {

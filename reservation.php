@@ -1,3 +1,10 @@
+<?php
+
+    require('include/db_config.php');
+    require('include/essentials.php');
+    adminLogin();
+?>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -159,35 +166,52 @@
                 </div>
             </section>
             <?php
-require('admin/include/db_config.php');
-require('admin/include/essentials.php');
+                require('admin/include/db_config.php');
+                require('admin/include/essentials.php');
 
-if (isset($_POST['submit'])) {
-    $frm_data = filteration($_POST);
-    if (empty($frm_data['res_fname']) || empty($frm_data['res_email']) || empty($frm_data['res_phone']) || empty($frm_data['date']) || empty($frm_data['arrivalTime']) || empty($frm_data['numberOfPeople']) || empty($frm_data['tableNumber']) || empty($frm_data['notes'])) {
-        alert('error', 'Please fill out all the fields.');
-    } else {
-        $query = "INSERT INTO reservation (full_name, email, phone, date, arrival_time, number_of_people, table_number, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $values = [
-            $frm_data['res_fname'],
-            $frm_data['res_email'],
-            $frm_data['res_phone'],
-            $frm_data['date'],
-            $frm_data['arrivalTime'],
-            $frm_data['numberOfPeople'],
-            $frm_data['tableNumber'],
-            $frm_data['notes']
-        ];
-        $res = insert($query, $values, "ssssssss");
+                if (isset($_POST['submit'])) {
+                    $frm_data = filteration($_POST);
 
-        if ($res == 1) {
-            alert('success', 'Reservation successful! Your table has been booked.');
-        } else {
-            alert('error', 'Error occurred! Please try again.');
-        }
-    }
-}
-?>
+                    // Check for empty fields
+                    if (empty($frm_data['res_fname']) || empty($frm_data['res_email']) || empty($frm_data['res_phone']) || empty($frm_data['date']) || empty($frm_data['arrivalTime']) || empty($frm_data['numberOfPeople']) || empty($frm_data['tableNumber']) || empty($frm_data['notes'])) {
+                        alert('error', 'Please fill out all the fields.');
+                    } else {
+                        // Check for existing reservation
+                        $existing_reservation_query = "SELECT * FROM reservation WHERE date = ? AND arrival_time = ? AND table_number = ?";
+                        $existing_reservation_values = [
+                            $frm_data['date'],
+                            $frm_data['arrivalTime'],
+                            $frm_data['tableNumber']
+                        ];
+                        $existing_reservation_res = select($existing_reservation_query, $existing_reservation_values, "sss");
+
+                        if ($existing_reservation_res && mysqli_num_rows($existing_reservation_res) > 0) {
+                            alert("error", "The reservation is already booked. Please select another time and date.");
+                        } else {
+                            // Insert new reservation
+                            $query = "INSERT INTO reservation (full_name, email, phone, date, arrival_time, number_of_people, table_number, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                            $values = [
+                                $frm_data['res_fname'],
+                                $frm_data['res_email'],
+                                $frm_data['res_phone'],
+                                $frm_data['date'],
+                                $frm_data['arrivalTime'],
+                                $frm_data['numberOfPeople'],
+                                $frm_data['tableNumber'],
+                                $frm_data['notes']
+                            ];
+                            $res = insert($query, $values, "ssssssss");
+
+                            if ($res == 1) {
+                                alert('success', 'Reservation successful! Your table has been booked.');
+                            } else {
+                                alert('error', 'Error occurred! Please try again.');
+                            }
+                        }
+                    }
+                }
+                ?>
+
 
             <?php require('include/newsletter.php')?>
         </main>
